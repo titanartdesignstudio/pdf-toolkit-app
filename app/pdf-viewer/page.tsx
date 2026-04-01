@@ -30,13 +30,14 @@ export default function PDFViewer() {
     setTotalPages(0);
 
     try {
-      const pdfjsLib: any = await import("pdfjs-dist");
+      // ✅ FINAL FIX (LEGACY IMPORT)
+      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf");
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      // ✅ WORKER
+      (pdfjsLib as any).GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
       const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      const pdf = await (pdfjsLib as any).getDocument({ data: buffer }).promise;
 
       setTotalPages(pdf.numPages);
 
@@ -45,7 +46,8 @@ export default function PDFViewer() {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
 
-        const viewport = page.getViewport({ scale: 1.2 }); // slightly optimized
+        const viewport = page.getViewport({ scale: 1.3 });
+
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
 
@@ -56,11 +58,9 @@ export default function PDFViewer() {
 
         await page.render({
           canvasContext: context,
-          canvas,
           viewport,
         }).promise;
 
-        // ✅ memory optimized
         images.push(canvas.toDataURL("image/jpeg", 0.8));
       }
 
@@ -95,11 +95,11 @@ export default function PDFViewer() {
         ← Back
       </button>
 
-      <h1 className="text-2xl font-bold text-center mb-6 tracking-wide">
+      <h1 className="text-2xl font-bold text-center mb-6">
         PDF Viewer
       </h1>
 
-      <div className="bg-slate-800 p-4 rounded-xl shadow mb-4">
+      <div className="bg-slate-800 p-4 rounded-xl mb-4">
         <input
           type="file"
           accept="application/pdf"
@@ -109,52 +109,28 @@ export default function PDFViewer() {
       </div>
 
       {fileName && (
-        <div className="text-center mb-3">
-          <p className="text-sm text-gray-400">{fileName}</p>
-          <p className="text-xs text-gray-500">
-            {totalPages} page(s)
-          </p>
-        </div>
-      )}
-
-      {error && (
-        <p className="text-red-400 text-center mb-3">{error}</p>
-      )}
-
-      {success && (
-        <p className="text-green-400 text-center mb-3">{success}</p>
-      )}
-
-      {loading && (
-        <p className="text-center text-gray-400 mb-3">
-          Rendering...
+        <p className="text-center text-gray-400 mb-2">
+          {fileName} ({totalPages} pages)
         </p>
       )}
+
+      {error && <p className="text-red-400 text-center mb-2">{error}</p>}
+      {success && <p className="text-green-400 text-center mb-2">{success}</p>}
 
       {pages.length > 0 && (
         <button
           onClick={resetViewer}
-          className="w-full mb-3 bg-red-500 py-2 rounded-lg text-sm"
+          className="w-full bg-red-500 py-2 rounded mb-3"
         >
           Reset
         </button>
       )}
 
-      <div className="space-y-4 mt-4">
+      <div className="space-y-4">
         {pages.map((img, i) => (
-          <div key={i} className="bg-slate-800 p-2 rounded-lg">
-            <p className="text-xs text-gray-400 mb-1">
-              Page {i + 1}
-            </p>
-            <img
-              src={img}
-              className="w-full rounded-lg shadow"
-              alt={`page-${i + 1}`}
-            />
-          </div>
+          <img key={i} src={img} className="w-full rounded" />
         ))}
       </div>
-
     </div>
   );
 }

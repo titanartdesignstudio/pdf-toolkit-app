@@ -51,13 +51,15 @@ export default function PDFToImage() {
     setSuccess("");
 
     try {
-      const pdfjsLib: any = await import("pdfjs-dist");
+      // ✅ CLIENT ONLY IMPORT (NO BUILD ERROR)
+      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf");
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      // ✅ LOCAL WORKER
+      (pdfjsLib as any).GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
       const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+      const pdf = await (pdfjsLib as any).getDocument({ data: buffer }).promise;
 
       const imgs: string[] = [];
 
@@ -76,11 +78,9 @@ export default function PDFToImage() {
 
         await page.render({
           canvasContext: context,
-          canvas,
           viewport,
         }).promise;
 
-        // ✅ compression for mobile safety
         imgs.push(canvas.toDataURL("image/jpeg", 0.7));
 
         setProgress(Math.round((i / pdf.numPages) * 100));
@@ -110,7 +110,6 @@ export default function PDFToImage() {
         return;
       }
 
-      // ✅ Android fix
       const result = await Filesystem.writeFile({
         path: fileName,
         data: base64,
