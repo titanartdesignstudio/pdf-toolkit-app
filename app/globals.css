@@ -1,26 +1,67 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ========================= */
+/* BASE STYLING */
+/* ========================= */
+
+html, body {
+  background-color: #020617;
+  color: white;
+  touch-action: manipulation; /* ✅ fix mobile click delay */
+  -webkit-tap-highlight-color: transparent;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ========================= */
+/* ANDROID CLICK FIX */
+/* ========================= */
+
+button, a, input, textarea {
+  pointer-events: auto !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Prevent weird blocking layers */
+* {
+  user-select: none;
 }
+
+/* Allow interaction inside buttons */
+button * {
+  pointer-events: none;
+}
+
+/* ========================= */
+/* SCROLL FIX (SMOOTH) */
+/* ========================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ========================= */
+/* INPUT FIX (MOBILE) */
+/* ========================= */
+
+input, textarea {
+  user-select: text;
+  outline: none;
+}
+
+/* ========================= */
+/* IMAGE FIX */
+/* ========================= */
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ========================= */
+/* SAFE AREA (ANDROID UI) */
+/* ========================= */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overscroll-behavior: none;
 }
